@@ -7,7 +7,7 @@ class Rot2D(Matrix):
 
     def _rot2D_column(j: int, q: int | float) -> Vector:
         if j == 0:
-            return Vector([cos(1), sin(q), 0], False)
+            return Vector([cos(q), sin(q), 0], False)
         elif j == 1:
             return Vector([-sin(q), cos(q), 0], False)
         elif j == 2:
