@@ -14,9 +14,9 @@ import random
 v1 = Vector(100000)
 v2 = Vector(100000)
 print(len(v1._vals))
-for _ in range(v1._d):
-    v1[_] = random.uniform(10, 20)
-    v2[_] = random.uniform(1, 5)
+for i in range(v1._d):
+    v1.set(i, random.uniform(10, 20))
+    v2.set(i, random.uniform(1, 5))
 # print(v1.sum(v2))
 
 cProfile.run('v1.sum(v2)')

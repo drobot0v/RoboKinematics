@@ -1,4 +1,5 @@
-from collections import defaultdict, Counter
+from collections import defaultdict
+import primitives as pm
 import math
 
 class AlgebraicException(Exception):
@@ -11,21 +12,23 @@ class InitializationException(Exception):
 
 class Vector:
 
+    DATA_INITIALIZATION_STRATEGY = lambda dim, vals, ratio, copy: \
+            pm.listToDefaultDict(vals) if len(vals) / dim < ratio else (vals.copy() if copy else vals)
+
     def __init__(self, dim: int, vals = None, copy = True):
         if dim <= 0:
             raise InitializationException
         self._d = dim
-        if vals:
-            if isinstance(vals, dict):
-                self._vals = vals.copy() if copy else vals
-            else:
-                if len(vals) >= self._d:
-                    raise InitializationException
-                for _ in range(self._d):
-                    self._vals = defaultdict(lambda: 0.0)
-                    self._vals[_] = vals[_]
-        else:
+        if not vals or len(vals) == 0:
             self._vals = defaultdict(lambda: 0.0)
+        elif len(vals) <= self._d:
+            if isinstance(vals, defaultdict): 
+                if(max(vals, key=vals.get) < self._d):      #TODO: It may be faster just not to provide access to elements with index >= _d
+                    self._vals = vals.copy() if copy else vals
+                else:
+                    raise InitializationException
+            else:
+                self._vals = Vector.DATA_INITIALIZATION_STRATEGY(self._d, vals, 1 / 2, copy)
 
     def iszero(self) -> bool:
        return len(self._vals.keys()) == 0
@@ -41,6 +44,11 @@ class Vector:
             self._vals[index] = value
         else:
             raise IndexError
+        
+    def set(self, index: int, value: float, skip_fun = lambda x: x < 1e-6):
+        if skip_fun and skip_fun(value):
+            pass
+        self[index] = value
 
     def removeByIndex(self, index, create_new=True):
         if create_new:
@@ -63,14 +71,12 @@ class Vector:
     def sum(self, other: 'Vector') -> 'Vector':
         if self._d == other._d:
             # return Vector(self._d, defaultdict(Counter(self._vals).update(Counter(other._vals))), False)
-            if not bool(self._vals):
+            if len(self._vals) == 0:
                 return other
-            elif not bool(other._vals):
+            elif len(other._vals) == 0:
                 return self
             else:
-                vals_ = defaultdict(float, 
-                                    {k: self._vals[k] + other._vals[k] for k in set(self._vals.keys()) | set(other._vals.keys())})
-                vals_.default_factory = lambda: 0.0
+                vals_ = [self._vals[i] + other._vals[i] for i in range(self._d)]
                 return Vector(self._d, vals_, False)
 
         else:
