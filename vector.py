@@ -48,7 +48,8 @@ class Vector:
     def set(self, index: int, value: float, skip_fun = lambda x: x < 1e-6):
         if skip_fun and skip_fun(value):
             pass
-        self[index] = value
+        else: 
+            self[index] = value
 
     def removeByIndex(self, index, create_new=True):
         if create_new:
